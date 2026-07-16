@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', sans-serif; background: #0f1117; color: #e0e0e0; padding: 20px; }
+  h1 { text-align: center; color: #7dd3fc; font-size: 1.4em; margin-bottom: 6px; }
+  .subtitle { text-align: center; color: #94a3b8; font-size: 0.85em; margin-bottom: 20px; }
+
+  /* TAB NAV */
+  .tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 18px; justify-content: center; }
+  .tab { padding: 8px 16px; border-radius: 20px; border: 1.5px solid #334155; background: #1e293b; color: #94a3b8; cursor: pointer; font-size: 0.82em; transition: all 0.2s; }
+  .tab:hover { border-color: #7dd3fc; color: #7dd3fc; }
+  .tab.active { background: #0ea5e9; border-color: #0ea5e9; color: white; font-weight: 600; }
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  /* CARDS */
+  .card { background: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 18px; margin-bottom: 14px; }
+  .card h2 { color: #7dd3fc; font-size: 1em; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+  .card p { color: #cbd5e1; font-size: 0.87em; line-height: 1.7; }
+
+  /* PIPELINE */
+  .pipeline { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 4px; margin: 16px 0; }
+  .pbox { background: #0f172a; border: 2px solid #0ea5e9; border-radius: 10px; padding: 12px 10px; text-align: center; min-width: 100px; max-width: 120px; }
+  .pbox .icon { font-size: 1.6em; }
+  .pbox .label { font-size: 0.75em; color: #7dd3fc; font-weight: 600; margin-top: 4px; }
+  .pbox .sub { font-size: 0.68em; color: #94a3b8; margin-top: 3px; }
+  .arrow { font-size: 1.4em; color: #0ea5e9; }
+
+  /* CODE BLOCKS */
+  .code-section { margin-bottom: 16px; }
+  .code-header { background: #0f172a; border: 1px solid #334155; border-radius: 8px 8px 0 0; padding: 8px 14px; display: flex; align-items: center; gap: 8px; }
+  .code-header .badge { background: #0ea5e9; color: white; font-size: 0.7em; padding: 2px 8px; border-radius: 10px; font-weight: 700; }
+  .code-header .title { color: #7dd3fc; font-size: 0.85em; font-weight: 600; }
+  .code-body { background: #0d1117; border: 1px solid #334155; border-top: none; border-radius: 0 0 8px 8px; padding: 14px; font-family: 'Courier New', monospace; font-size: 0.8em; }
+  .code-line { display: flex; gap: 10px; margin-bottom: 4px; align-items: flex-start; }
+  .line-num { color: #475569; min-width: 22px; text-align: right; font-size: 0.85em; margin-top: 1px; }
+  .code-text { color: #e2e8f0; flex: 1; }
+  .comment { color: #22c55e; }
+  .keyword { color: #f472b6; }
+  .func { color: #fb923c; }
+  .string { color: #a78bfa; }
+  .number { color: #fbbf24; }
+  .explain-box { background: #1a2744; border-left: 3px solid #0ea5e9; border-radius: 0 8px 8px 0; padding: 10px 14px; margin-top: 6px; margin-bottom: 12px; font-size: 0.82em; color: #bfdbfe; line-height: 1.6; }
+  .explain-box strong { color: #7dd3fc; }
+
+  /* MATH */
+  .math-box { background: #0f172a; border: 2px solid #6366f1; border-radius: 10px; padding: 14px 18px; margin: 10px 0; text-align: center; }
+  .math-formula { font-family: 'Courier New', monospace; font-size: 1em; color: #a5f3fc; margin-bottom: 6px; }
+  .math-explain { font-size: 0.78em; color: #94a3b8; }
+
+  /* PARAM TABLE */
+  table { width: 100%; border-collapse: collapse; font-size: 0.82em; }
+  th { background: #0f172a; color: #7dd3fc; padding: 8px 10px; text-align: left; border-bottom: 2px solid #334155; }
+  td { padding: 7px 10px; border-bottom: 1px solid #1e293b; color: #cbd5e1; vertical-align: top; }
+  tr:hover td { background: #1e293b; }
+  td:first-child { color: #fb923c; font-family: monospace; }
+  td:nth-child(2) { color: #86efac; }
+
+  /* STEPS */
+  .step { display: flex; gap: 14px; margin-bottom: 14px; align-items: flex-start; }
+  .step-num { background: #0ea5e9; color: white; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.85em; flex-shrink: 0; margin-top: 2px; }
+  .step-body { flex: 1; }
+  .step-body h3 { color: #7dd3fc; font-size: 0.9em; margin-bottom: 4px; }
+  .step-body p { color: #94a3b8; font-size: 0.82em; line-height: 1.6; }
+  .step-body code { background: #0f172a; color: #fb923c; padding: 1px 5px; border-radius: 4px; font-size: 0.9em; }
+
+  /* ALERT */
+  .alert { border-radius: 8px; padding: 10px 14px; margin: 10px 0; font-size: 0.82em; line-height: 1.6; }
+  .alert-blue { background: #0c2340; border-left: 4px solid #0ea5e9; color: #bfdbfe; }
+  .alert-yellow { background: #2a1f00; border-left: 4px solid #f59e0b; color: #fde68a; }
+  .alert-green { background: #052e16; border-left: 4px solid #22c55e; color: #86efac; }
+
+  /* DAS VISUAL */
+  .das-visual { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; margin: 14px 0; }
+  .element-col { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+  .elem { width: 32px; height: 14px; background: #0ea5e9; border-radius: 3px; }
+  .elem-label { font-size: 0.68em; color: #7dd3fc; }
+  .pixel-dot { width: 16px; height: 16px; background: #f472b6; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.6em; color: white; }
+
+  .tag { display: inline-block; background: #1e3a5f; color: #7dd3fc; font-size: 0.72em; padding: 2px 8px; border-radius: 10px; margin: 2px; }
+</style>
+</head>
+<body>
+
+<h1>🔬 DAS Beamforming — Complete Guide</h1>
+<p class="subtitle">From zero knowledge to understanding the PALA codebase</p>
+
+<div class="tabs">
+  <div class="tab active" onclick="show('what')">① What is DAS?</div>
+  <div class="tab" onclick="show('physics')">② The Physics</div>
+  <div class="tab" onclick="show('pipeline')">③ The Pipeline</div>
+  <div class="tab" onclick="show('params')">④ PARAM Explained</div>
+  <div class="tab" onclick="show('maincode')">⑤ Main Script</div>
+  <div class="tab" onclick="show('function')">⑥ BF_DelayAndSum</div>
+  <div class="tab" onclick="show('howto')">⑦ How To Run</div>
+</div>
+
+<!-- PANEL 1: WHAT IS DAS -->
+<div class="panel active" id="what">
+  <div class="card">
+    <h2>🧠 Start Here: What Problem Are We Solving?</h2>
+    <p>You already know that ultrasound works by sending sound waves into the body and listening to the echoes. But here's the key question: <strong style="color:#f472b6">how do you turn those raw echoes into a picture?</strong></p>
+    <p style="margin-top:10px">The answer is <strong style="color:#7dd3fc">beamforming</strong> — and DAS (Delay-And-Sum) is the most fundamental way to do it.</p>
+  </div>
+
+  <div class="card">
+    <h2>🎯 The Core Idea of DAS — An Analogy</h2>
+    <p>Imagine you're blindfolded in a large room, and you clap your hands once. Your two ears hear the echo come back. Because your ears are in slightly different positions, the echo from the left wall reaches your left ear slightly before your right ear.</p>
+    <p style="margin-top:8px">By measuring <strong style="color:#fbbf24">WHICH ear heard it first</strong> and <strong style="color:#fbbf24">HOW MUCH earlier</strong>, you can figure out WHERE that wall is.</p>
+    <p style="margin-top:8px">DAS does exactly this — but with <strong style="color:#7dd3fc">128+ transducer elements</strong> instead of 2 ears, and with millions of pixels instead of just one wall.</p>
+  </div>
+
+  <div class="card">
+    <h2>📐 DAS in 3 Simple Steps</h2>
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <h3>DELAY — Calculate travel time to every pixel</h3>
+        <p>For each pixel (x, z) in the image grid, calculate exactly how long it would take sound to travel FROM the transducer TO that pixel AND BACK to each receiving element. This gives you a time delay for each element.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <h3>ALIGN — Shift the signals using those delays</h3>
+        <p>Each element's recorded signal is shifted (delayed) so that echoes from the target pixel line up in time across all elements. This is called "rephasing."</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <h3>SUM — Add all the aligned signals together</h3>
+        <p>When you add all elements' aligned signals, echoes from the target pixel add up coherently (get louder), while noise and echoes from other locations cancel out. Result: one bright pixel value.</p>
+      </div>
+    </div>
+    <div class="alert alert-blue">🔁 Repeat this for EVERY pixel in the image grid. That's your ultrasound image!</div>
+  </div>
+
+  <div class="card">
+    <h2>🔬 What is this PALA project specifically?</h2>
+    <p>PALA = <strong style="color:#7dd3fc">Performance Assessment of Localization Algorithms</strong>. It's a benchmark project from a French research lab (Sorbonne University) for <strong style="color:#f472b6">Ultrasound Localization Microscopy (ULM)</strong> — a super-resolution technique that tracks microbubbles in blood vessels to image them 10x beyond normal ultrasound resolution. DAS beamforming is step one: turning raw RF data into images that you then analyze.</p>
+  </div>
+</div>
+
+<!-- PANEL 2: PHYSICS -->
+<div class="panel" id="physics">
+  <div class="card">
+    <h2>📡 Key Physical Concepts You Need</h2>
+  </div>
+
+  <div class="card">
+    <h2>① RF Signal — What the transducer actually records</h2>
+    <p><strong style="color:#fbbf24">RF = Radio Frequency signal</strong>. It's the raw voltage vs. time waveform picked up by each transducer element after a sound pulse is sent. It oscillates at the transducer's center frequency (e.g., 15 MHz). Think of it as the "raw audio" — not yet converted into an image.</p>
+  </div>
+
+  <div class="card">
+    <h2>② IQ Signal — The demodulated version</h2>
+    <p><strong style="color:#fbbf24">IQ = In-phase / Quadrature</strong>. Instead of storing the fast-oscillating RF signal, we extract the "envelope" information as a complex number (I + jQ). This is mathematically equivalent but easier to work with. The magnitude |IQ| gives you the brightness of each pixel.</p>
+    <div class="math-box">
+      <div class="math-formula">RF signal (15 MHz oscillating) → demodulate → IQ (complex, slower)</div>
+      <div class="math-explain">Like converting a radio carrier wave into just the audio information it carries</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>③ The Delay Formula — The heart of DAS</h2>
+    <div class="math-box">
+      <div class="math-formula">τ(x,z, element_e) = (d_tx + d_rx) / c</div>
+      <div class="math-explain">d_tx = distance from transmitter to pixel (x,z) | d_rx = distance from pixel to element e | c = speed of sound (~1540 m/s in tissue)</div>
+    </div>
+    <p style="margin-top:10px">For a plane wave sent at angle θ:</p>
+    <div class="math-box">
+      <div class="math-formula">d_tx = z·cos(θ) + x·sin(θ)</div>
+      <div class="math-formula">d_rx = √[(x - xe)² + z²]</div>
+      <div class="math-explain">xe = x-position of element e on the transducer array</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>④ Plane Wave Compounding — Why use multiple angles?</h2>
+    <p>Instead of focusing on one beam, you fire a flat "plane wave" across the entire image at different steering angles (e.g., -10°, -5°, 0°, +5°, +10°). Each angle gives a low-quality image. You then <strong style="color:#7dd3fc">coherently add (compound)</strong> them together.</p>
+    <div class="alert alert-green">✅ Result: much better image quality (contrast, resolution) while keeping high frame rate — critical for tracking fast-moving microbubbles!</div>
+    <p style="margin-top:8px">In the code: <code style="background:#0f172a;color:#fb923c;padding:2px 6px;border-radius:4px">PARAM.compound = 1</code> means "yes, sum all angles together"</p>
+  </div>
+
+  <div class="card">
+    <h2>⑤ F-number — Controlling which elements contribute</h2>
+    <p>F-number = focal_depth / aperture_width. It controls which transducer elements are "allowed" to contribute to each pixel. Elements too far to the side are ignored (they'd add noise, not signal). In the code: <code style="background:#0f172a;color:#fb923c;padding:2px 6px;border-radius:4px">PARAM.fnumber = 1.9</code></p>
+  </div>
+
+  <div class="card">
+    <h2>⑥ B-mode Image — What you finally see</h2>
+    <div class="math-box">
+      <div class="math-formula">B-mode [dB] = 20 · log₁₀( |IQ| )</div>
+      <div class="math-explain">Convert complex IQ magnitude to decibels for display. Bright = strong echo. Dark = weak echo.</div>
+    </div>
+    <p>In the code: <code style="background:#0f172a;color:#fb923c;padding:2px 6px;border-radius:4px">Bmode = 20*log10(abs(IQ))</code></p>
+  </div>
+</div>
+
+<!-- PANEL 3: PIPELINE -->
+<div class="panel" id="pipeline">
+  <div class="card">
+    <h2>🔄 Full Data Flow: From Raw Data to Image</h2>
+  </div>
+
+  <div style="overflow-x:auto">
+  <div class="pipeline">
+    <div class="pbox">
+      <div class="icon">📡</div>
+      <div class="label">Transducer fires</div>
+      <div class="sub">Plane wave at angle θ</div>
+    </div>
+    <div class="arrow">→</div>
+    <div class="pbox">
+      <div class="icon">📻</div>
+      <div class="label">RF Data received</div>
+      <div class="sub">RFdata array<br>[samples × elements × frames]</div>
+    </div>
+    <div class="arrow">→</div>
+    <div class="pbox" style="border-color:#f472b6">
+      <div class="icon">🔄</div>
+      <div class="label">Demodulation</div>
+      <div class="sub">BF_demod100BWtoIQ<br>RF → IQ (complex)</div>
+    </div>
+    <div class="arrow">→</div>
+    <div class="pbox" style="border-color:#f472b6">
+      <div class="icon">⏱️</div>
+      <div class="label">DAS Beamform</div>
+      <div class="sub">BF_DelayAndSum<br>Delay + Align + Sum</div>
+    </div>
+    <div class="arrow">→</div>
+    <div class="pbox" style="border-color:#22c55e">
+      <div class="icon">🖼️</div>
+      <div class="label">IQ Image</div>
+      <div class="sub">Complex image<br>[pixels_z × pixels_x]</div>
+    </div>
+    <div class="arrow">→</div>
+    <div class="pbox" style="border-color:#22c55e">
+      <div class="icon">🔊</div>
+      <div class="label">B-mode Display</div>
+      <div class="sub">20·log10(|IQ|)<br>Grayscale image</div>
+    </div>
+  </div>
+  </div>
+
+  <div class="card" style="margin-top:14px">
+    <h2>📂 What Data Files Are Involved?</h2>
+    <table>
+      <tr><th>File</th><th>Type</th><th>Contents</th></tr>
+      <tr><td>*_sequence.mat</td><td>Setup</td><td>Transducer parameters (P, PData, Trans, TX, TW, Receive, Resource)</td></tr>
+      <tr><td>*_RF_008.mat</td><td>RAW input</td><td>RFdata — raw unbeamformed signals from transducer elements</td></tr>
+      <tr><td>*_IQ_008.mat</td><td>Reference</td><td>IQ data already beamformed by Verasonics Vantage system (for comparison)</td></tr>
+    </table>
+  </div>
+
+  <div class="card">
+    <h2>📁 Two Datasets in This Project</h2>
+    <div class="step">
+      <div class="step-num">A</div>
+      <div class="step-body">
+        <h3>InSilicoFlow — simulated blood flow</h3>
+        <p>Simulated microbubbles flowing through vessels. Used for the main beamforming script <code>PALA_Beamforming.m</code>. RF files are in a subfolder <code>RF\</code>.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">B</div>
+      <div class="step-body">
+        <h3>InSilicoPSF — Point Spread Function test</h3>
+        <p>Single point scatterers to measure resolution. Used for <code>PALA_Beamforming_SilicoPSF.m</code>. RF files are in the same folder.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PANEL 4: PARAMS -->
+<div class="panel" id="params">
+  <div class="card">
+    <h2>⚙️ Every PARAM Field — What it means physically</h2>
+    <table>
+      <tr><th>Parameter</th><th>Value/Units</th><th>What it means</th></tr>
+      <tr><td>PARAM.f0</td><td>~15 MHz</td><td>Center frequency of the ultrasound pulse. Higher = better resolution, less depth.</td></tr>
+      <tr><td>PARAM.fs</td><td>~60 MHz</td><td>How fast the ADC samples the RF signal. Must be ≥ 2×f0 (Nyquist).</td></tr>
+      <tr><td>PARAM.c</td><td>1540 m/s</td><td>Speed of sound in tissue. Used to convert time delays to distances.</td></tr>
+      <tr><td>PARAM.wavelength</td><td>c/f0 ~102 µm</td><td>One acoustic wavelength. Resolution limit is ~0.5 wavelengths.</td></tr>
+      <tr><td>PARAM.xe</td><td>array, meters</td><td>X-position of each transducer element. Needed to compute d_rx.</td></tr>
+      <tr><td>PARAM.Nelements</td><td>e.g. 128</td><td>Number of elements on the transducer probe.</td></tr>
+      <tr><td>PARAM.t0</td><td>seconds</td><td>Time between firing pulse and start of recording. Subtracts off in delay calc.</td></tr>
+      <tr><td>PARAM.angles_list</td><td>radians array</td><td>List of steering angles used for compounding (e.g., -10° to +10°).</td></tr>
+      <tr><td>PARAM.fnumber</td><td>1.9 (unitless)</td><td>Controls aperture size. Higher = narrower aperture = fewer elements used.</td></tr>
+      <tr><td>PARAM.compound</td><td>0 or 1</td><td>1 = add all angles into one image. 0 = keep separate images per angle.</td></tr>
+      <tr><td>PARAM.bandwidth</td><td>% of f0</td><td>Frequency bandwidth of the transducer. Affects axial resolution.</td></tr>
+      <tr><td>PARAM.x</td><td>meters array</td><td>X-coordinates of output image pixel grid (lateral direction).</td></tr>
+      <tr><td>PARAM.z</td><td>meters array</td><td>Z-coordinates of output image pixel grid (axial/depth direction).</td></tr>
+    </table>
+  </div>
+
+  <div class="card">
+    <h2>🗺️ Understanding the Pixel Grid</h2>
+    <div class="alert alert-blue">
+      <strong>mesh_X, mesh_Z</strong> are 2D matrices where every entry gives the (x,z) coordinate of one output pixel. Created with MATLAB's <code>meshgrid</code>. The beamformer loops over every pixel to compute its intensity.
+    </div>
+    <div class="math-box">
+      <div class="math-formula">PARAM.z = (Origin_z + [0,1,2,...,Nz-1] × Δz) × wavelength</div>
+      <div class="math-formula">PARAM.x = (Origin_x + [0,1,2,...,Nx-1] × Δx) × wavelength</div>
+      <div class="math-explain">PDelta gives the pixel spacing in wavelengths; multiply by wavelength to get meters</div>
+    </div>
+  </div>
+</div>
+
+<!-- PANEL 5: MAIN SCRIPT -->
+<div class="panel" id="maincode">
+  <div class="card">
+    <h2>📋 PALA_Beamforming.m — Line by Line</h2>
+  </div>
+
+  <!-- Section 1: Setup -->
+  <div class="code-section">
+    <div class="code-header"><div class="badge">SETUP</div><div class="title">Environment Setup</div></div>
+    <div class="code-body">
+      <div class="code-line"><span class="line-num">1</span><span class="code-text"><span class="func">cd</span>(<span class="string">'F:\ArthurC\...\FightClub_PostPro'</span>)</span></div>
+      <div class="code-line"><span class="line-num">2</span><span class="code-text"><span class="func">run</span>(<span class="string">'PALA_scripts/PALA_SetUpPaths.m'</span>)</span></div>
+      <div class="code-line"><span class="line-num">3</span><span class="code-text"><span class="func">addpath</span>(<span class="string">'PALA_Beamforming'</span>)</span></div>
+    </div>
+    <div class="explain-box">
+      <strong>cd</strong>: Change Directory — moves MATLAB to the project folder.<br>
+      <strong>run SetUpPaths</strong>: Runs a setup script that defines the variable <code>PALA_data_folder</code> (where your data lives).<br>
+      <strong>addpath</strong>: Adds the beamforming functions folder so MATLAB can find <code>BF_DelayAndSum</code>, <code>BF_demod100BWtoIQ</code>, etc.
+    </div>
+  </div>
+
+  <!-- Section 2: Load data -->
+  <div class="code-section">
+    <div class="code-header"><div class="badge">LOAD</div><div class="title">Loading Data Files</div></div>
+    <div class="code-body">
+      <div class="code-line"><span class="line-num">5</span><span class="code-text">workingdir = [PALA_data_folder <span class="string">'\PALA_data_InSilicoFlow'</span>]; <span class="func">cd</span>(workingdir)</span></div>
+      <div class="code-line"><span class="line-num">6</span><span class="code-text">filename = <span class="string">'PALA_InSilicoFlow'</span>;</span></div>
+      <div class="code-line"><span class="line-num">8</span><span class="code-text">listVar = {<span class="string">'P','PData','Trans','Media','UF','Resource','TW','TX','Receive'</span>};</span></div>
+      <div class="code-line"><span class="line-num">9</span><span class="code-text"><span class="func">load</span>([myfilepath <span class="string">'_sequence.mat'</span>],<span class="string">'-mat'</span>,listVar{:});</span></div>
+      <div class="code-line"><span class="line-num">11</span><span class="code-text">hhh=<span class="number">8</span>; <span class="comment">% file number (batch 8 out of many)</span></span></div>
+      <div class="code-line"><span class="line-num">12</span><span class="code-text"><span class="func">load</span>([myfilepath_RF <span class="string">'_RF'</span> <span class="func">num2str</span>(hhh,<span class="string">'%03.0f'</span>) <span class="string">'.mat'</span>],<span class="string">'RFdata','ListPos','Media','P'</span>);</span></div>
+    </div>
+    <div class="explain-box">
+      <strong>_sequence.mat</strong>: Contains all transducer/system configuration variables:<br>
+      • <strong>P</strong>: main params (numTx=angles, NDsample=samples per angle, startDepth, BlocSize...)<br>
+      • <strong>Trans</strong>: transducer properties (frequency, element positions, bandwidth)<br>
+      • <strong>TX</strong>: transmit settings, including <code>TX.Steer</code> = steering angles<br>
+      • <strong>TW</strong>: transmit waveform (TW.peak = pulse peak time)<br>
+      • <strong>Receive</strong>: receive settings (demodFrequency = sampling rate)<br>
+      • <strong>PData</strong>: pixel grid definition (Origin, Size, PDelta)<br>
+      • <strong>Resource</strong>: includes speedOfSound<br><br>
+      <strong>_RF008.mat</strong>: The actual raw echo data. <code>hhh=8</code> means we're loading the 8th batch of data. Filename becomes <code>_RF008.mat</code> via <code>num2str(8,'%03.0f')</code> → "008".<br>
+      <strong>ListPos</strong>: Ground truth microbubble positions (for validation overlay on image).
+    </div>
+  </div>
+
+  <!-- Section 3: PARAM -->
+  <div class="code-section">
+    <div class="code-header"><div class="badge">PARAM</div><div class="title">Building the PARAM Structure</div></div>
+    <div class="code-body">
+      <div class="code-line"><span class="line-num">14</span><span class="code-text">PARAM.f0 = Trans.frequency*<span class="number">1e6</span>; <span class="comment">% Hz</span></span></div>
+      <div class="code-line"><span class="line-num">15</span><span class="code-text">PARAM.fs = Receive.demodFrequency*<span class="number">1e6</span>; <span class="comment">% Hz</span></span></div>
+      <div class="code-line"><span class="line-num">16</span><span class="code-text">PARAM.c = Resource.Parameters.speedOfSound; <span class="comment">% m/s</span></span></div>
+      <div class="code-line"><span class="line-num">17</span><span class="code-text">PARAM.wavelength = PARAM.c/PARAM.f0;</span></div>
+      <div class="code-line"><span class="line-num">18</span><span class="code-text">PARAM.xe = Trans.ElementPos(:,<span class="number">1</span>)/<span class="number">1000</span>; <span class="comment">% mm→m</span></span></div>
+      <div class="code-line"><span class="line-num">19</span><span class="code-text">PARAM.t0 = <span class="number">2</span>*P.startDepth*PARAM.wavelength/PARAM.c - TW.peak/PARAM.f0;</span></div>
+      <div class="code-line"><span class="line-num">21</span><span class="code-text">PARAM.angles_list = angles_list; PARAM.fnumber = <span class="number">1.9</span>; PARAM.compound = <span class="number">1</span>;</span></div>
+    </div>
+    <div class="explain-box">
+      <strong>t0 formula</strong>: The tricky one. <code>2*startDepth*λ/c</code> = time for sound to travel to the start of the recording depth and back. Minus <code>TW.peak/f0</code> to account for when in the pulse the "center" is. This gives you the absolute time reference so delays are calculated correctly.<br><br>
+      <strong>angles_list</strong>: Extracted from <code>TX(1:numTx).Steer(:,1)</code> — one angle per transmission event. With 5 angles at [-10°,-5°,0°,5°,10°], you fire 5 times per frame.
+    </div>
+  </div>
+
+  <!-- Section 4: Beamforming loop -->
+  <div class="code-section">
+    <div class="code-header"><div class="badge">CORE</div><div class="title">The Beamforming Loop</div></div>
+    <div class="code-body">
+      <div class="code-line"><span class="line-num">26</span><span class="code-text">IQ = <span class="func">zeros</span>([PData.Size(<span class="number">1</span>:<span class="number">2</span>) ...], <span class="string">'single'</span>); <span class="comment">% pre-allocate output</span></span></div>
+      <div class="code-line"><span class="line-num">28</span><span class="code-text"><span class="keyword">for</span> ii = <span class="number">1</span>:<span class="number">40</span> <span class="comment">% loop over 40 frames</span></span></div>
+      <div class="code-line"><span class="line-num">29</span><span class="code-text">  <span class="keyword">for</span> iTX = <span class="number">1</span>:P.numTx <span class="comment">% loop over each transmit angle</span></span></div>
+      <div class="code-line"><span class="line-num">30</span><span class="code-text">    RFi = <span class="func">single</span>(RFdata((iTX-<span class="number">1</span>)*P.NDsample + (<span class="number">1</span>:P.NDsample),:,ii));</span></div>
+      <div class="code-line"><span class="line-num">31</span><span class="code-text">    RF_IQ{iTX} = <span class="func">BF_demod100BWtoIQ</span>(RFi);</span></div>
+      <div class="code-line"><span class="line-num">32</span><span class="code-text">  <span class="keyword">end</span></span></div>
+      <div class="code-line"><span class="line-num">34</span><span class="code-text">  IQ(:,:,:,ii) = <span class="func">BF_DelayAndSum</span>(RF_IQ, PARAM, mesh_X, mesh_Z);</span></div>
+      <div class="code-line"><span class="line-num">35</span><span class="code-text"><span class="keyword">end</span></span></div>
+    </div>
+    <div class="explain-box">
+      <strong>RFdata dimensions</strong>: [total_samples × Nelements × Nframes]<br>
+      • total_samples = numTx × NDsample (all angles concatenated in the first dimension)<br>
+      • So <code>(iTX-1)*NDsample + (1:NDsample)</code> extracts just the rows for angle iTX<br><br>
+      <strong>BF_demod100BWtoIQ</strong>: Converts 100%-bandwidth RF to IQ. This is the demodulation step — shifts the signal from 15 MHz carrier down to baseband (complex signal near 0 Hz).<br><br>
+      <strong>RF_IQ{iTX}</strong>: A cell array where RF_IQ{1} = demodulated signal for angle 1, RF_IQ{2} for angle 2, etc.<br><br>
+      <strong>BF_DelayAndSum</strong>: The main function — takes all angles' IQ signals and produces one beamformed image. With compound=1, outputs one 2D image per frame.
+    </div>
+  </div>
+
+  <!-- Section 5: Display -->
+  <div class="code-section">
+    <div class="code-header"><div class="badge">DISPLAY</div><div class="title">Visualization</div></div>
+    <div class="code-body">
+      <div class="code-line"><span class="line-num">38</span><span class="code-text">Bmode = <span class="number">20</span>*<span class="func">log10</span>(<span class="func">abs</span>(IQ(:,:,<span class="number">1</span>,:)));</span></div>
+      <div class="code-line"><span class="line-num">39</span><span class="code-text">Bmode = <span class="func">squeeze</span>(Bmode) - <span class="func">max</span>(Bmode(:)); <span class="comment">% normalize to 0 dB max</span></span></div>
+      <div class="code-line"><span class="line-num">40</span><span class="code-text">dbmax = -<span class="number">60</span>; <span class="comment">% display range: 0 to -60 dB</span></span></div>
+      <div class="code-line"><span class="line-num">42</span><span class="code-text"><span class="func">imagesc</span>(PARAM.x*<span class="number">1e3</span>, PARAM.z*<span class="number">1e3</span>, Bmode(:,:,<span class="number">1</span>), [dbmax <span class="number">0</span>]);</span></div>
+      <div class="code-line"><span class="line-num">43</span><span class="code-text"><span class="func">colormap</span> gray; <span class="func">axis</span> image;</span></div>
+      <div class="code-line"><span class="line-num">45</span><span class="code-text">pp = <span class="func">plot</span>(ListPos(:,<span class="number">1</span>,ii)*P.Wavelength, ListPos(:,<span class="number">3</span>,ii)*P.Wavelength, <span class="string">'rx'</span>);</span></div>
+    </div>
+    <div class="explain-box">
+      <strong>abs(IQ)</strong>: Magnitude of complex IQ = envelope of ultrasound signal = brightness<br>
+      <strong>20*log10</strong>: Convert to decibels. Typical tissue spans ~60 dB dynamic range.<br>
+      <strong>-max(Bmode)</strong>: Normalize so the brightest pixel = 0 dB. Everything else is negative.<br>
+      <strong>[dbmax 0] = [-60, 0]</strong>: Display range. Anything below -60 dB shows as black.<br>
+      <strong>*1e3</strong>: Convert meters to millimeters for axis labels.<br>
+      <strong>ListPos red 'x' marks</strong>: Plots the known ground-truth bubble positions on top of the image — lets you verify beamforming is correct.
+    </div>
+  </div>
+</div>
+
+<!-- PANEL 6: BF_DelayAndSum function -->
+<div class="panel" id="function">
+  <div class="card">
+    <h2>🔧 BF_DelayAndSum — The Core Function Explained</h2>
+    <p>This is where the actual DAS algorithm lives. Let's dissect every line.</p>
+  </div>
+
+  <div class="code-section">
+    <div class="code-header"><div class="badge">INPUT</div><div class="title">Function Signature</div></div>
+    <div class="code-body">
+      <div class="code-line"><span class="line-num">1</span><span class="code-text"><span class="keyword">function</span> IQ = <span class="func">BF_DelayAndSum</span>(SIG, PARAM, X, Z)</span></div>
+    </div>
+    <div class="explain-box">
+      <strong>SIG</strong>: Cell array of IQ signals. SIG{1} = signal for angle 1, SIG{2} = angle 2... Each is [Nsamples × Nelements]<br>
+      <strong>PARAM</strong>: The parameter structure (all the physics constants)<br>
+      <strong>X, Z</strong>: 2D pixel coordinate grids from meshgrid — shape [Nz × Nx]<br>
+      <strong>IQ (output)</strong>: Beamformed complex image — shape [Nz × Nx]. Take abs() to get brightness.
+    </div>
+  </div>
+
+  <div class="code-section">
+    <div class="code-header"><div class="badge">INIT</div><div class="title">Initialize Output</div></div>
+    <div class="code-body">
+      <div class="code-line"><span class="line-num">2</span><span class="code-text">IQ = <span class="func">zeros</span>(<span class="func">size</span>(X), <span class="func">class</span>(SIG{<span class="number">1</span>}));</span></div>
+      <div class="code-line"><span class="line-num">3</span><span class="code-text"><span class="keyword">if</span> ~<span class="func">isfield</span>(PARAM, <span class="string">'compound'</span>)</span></div>
+      <div class="code-line"><span class="line-num">4</span><span class="code-text">  PARAM.compound = <span class="number">1</span>; <span class="comment">% default to compounding</span></span></div>
+      <div class="code-line"><span class="line-num">5</span><span class="code-text"><span class="keyword">end</span></span></div>
+    </div>
+    <div class="explain-box">
+      Creates an output image filled with zeros, same data type as input signal (single-precision float for memory efficiency).<br>
+      The <code>isfield</code> check is a safety net — if someone calls this function without setting compound, it defaults to ON.
+    </div>
+  </div>
+
+  <div class="code-section">
+    <div class="code-header"><div class="badge">LOOP</div><div class="title">Main Angle Loop — The DAS Core</div></div>
+    <div class="code-body">
+      <div class="code-line"><span class="line-num">6</span><span class="code-text"><span class="keyword">for</span> k = <span class="number">1</span>:<span class="func">length</span>(PARAM.angles_list)  <span class="comment">% for each steering angle</span></span></div>
+      <div class="code-line"><span class="line-num">7</span><span class="code-text">  PARAM.theta = PARAM.angles_list(k);  <span class="comment">% set current angle</span></span></div>
+      <div class="code-line"><span class="line-num">8</span><span class="code-text">  <span class="keyword">if</span> PARAM.compound</span></div>
+      <div class="code-line"><span class="line-num">9</span><span class="code-text">    IQ = IQ + <span class="func">BF_das_rephaseSignal</span>(SIG{k}, PARAM, X, Z);  <span class="comment">% ADD to same image</span></span></div>
+      <div class="code-line"><span class="line-num">10</span><span class="code-text">  <span class="keyword">else</span></span></div>
+      <div class="code-line"><span class="line-num">11</span><span class="code-text">    IQ(:,:,k) = <span class="func">BF_das_rephaseSignal</span>(SIG{k}, PARAM, X, Z);  <span class="comment">% SEPARATE images</span></span></div>
+      <div class="code-line"><span class="line-num">12</span><span class="code-text">  <span class="keyword">end</span></span></div>
+      <div class="code-line"><span class="line-num">13</span><span class="code-text"><span class="keyword">end</span></span></div>
+    </div>
+    <div class="explain-box">
+      <strong>For each angle k:</strong><br>
+      1. Set PARAM.theta = that angle<br>
+      2. Call <code>BF_das_rephaseSignal</code> — this does the actual delay computation and summation for ONE angle. It returns a full 2D image.<br>
+      3. If compounding: add the result to the accumulating IQ image (coherent summation)<br>
+      4. If not compounding: store it as a separate "slice" — IQ(:,:,1), IQ(:,:,2), etc.<br><br>
+      <strong>BF_das_rephaseSignal</strong> (not shown here) is where τ = (d_tx + d_rx)/c is computed for every pixel, the signal is interpolated at that time delay, and summed across all elements.
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>🎨 Visual: What Compounding Looks Like</h2>
+    <div class="alert alert-yellow">
+      ⚠️ Without compounding: you get 1 blurry image per angle (like a photo taken from one side)<br><br>
+      ✅ With compounding: you sum 5-15 angle images coherently → much sharper, better contrast
+    </div>
+    <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:10px">
+      <div style="flex:1; min-width:120px; background:#0f172a; border:2px solid #6366f1; border-radius:8px; padding:12px; text-align:center">
+        <div style="font-size:1.4em">📐</div>
+        <div style="color:#a5b4fc; font-size:0.8em; margin-top:6px">Angle -10°</div>
+        <div style="color:#64748b; font-size:0.72em">Low quality image</div>
+      </div>
+      <div style="display:flex; align-items:center; color:#6366f1; font-size:1.2em">+</div>
+      <div style="flex:1; min-width:120px; background:#0f172a; border:2px solid #6366f1; border-radius:8px; padding:12px; text-align:center">
+        <div style="font-size:1.4em">📐</div>
+        <div style="color:#a5b4fc; font-size:0.8em; margin-top:6px">Angle 0°</div>
+        <div style="color:#64748b; font-size:0.72em">Low quality image</div>
+      </div>
+      <div style="display:flex; align-items:center; color:#6366f1; font-size:1.2em">+</div>
+      <div style="flex:1; min-width:120px; background:#0f172a; border:2px solid #6366f1; border-radius:8px; padding:12px; text-align:center">
+        <div style="font-size:1.4em">📐</div>
+        <div style="color:#a5b4fc; font-size:0.8em; margin-top:6px">Angle +10°</div>
+        <div style="color:#64748b; font-size:0.72em">Low quality image</div>
+      </div>
+      <div style="display:flex; align-items:center; color:#22c55e; font-size:1.2em">=</div>
+      <div style="flex:1; min-width:120px; background:#0f172a; border:2px solid #22c55e; border-radius:8px; padding:12px; text-align:center">
+        <div style="font-size:1.4em">🖼️</div>
+        <div style="color:#86efac; font-size:0.8em; margin-top:6px">Compounded</div>
+        <div style="color:#4ade80; font-size:0.72em">High quality image!</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PANEL 7: HOW TO RUN -->
+<div class="panel" id="howto">
+  <div class="card">
+    <h2>💻 What Software Do You Need?</h2>
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <h3>MATLAB (Required)</h3>
+        <p>This code is written entirely in MATLAB. You need MATLAB installed — any version from R2018a or newer should work. The university likely has a license. You can also use the free <strong>MATLAB Online</strong> via browser if you have a MathWorks account.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <h3>PALA Toolbox (Required)</h3>
+        <p>Download the full PALA package from GitHub: <strong>github.com/AChavignon/PALA</strong>. This contains: the beamforming functions (<code>BF_DelayAndSum</code>, <code>BF_demod100BWtoIQ</code>, <code>BF_das_rephaseSignal</code>), the setup scripts, and the data files.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <h3>Optional: tight_subplot</h3>
+        <p>The comparison plot uses <code>tight_subplot</code> — a free MATLAB utility. Download from MATLAB File Exchange if needed.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>🚀 Step-by-Step: Running the Code</h2>
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <h3>Download and organize files</h3>
+        <p>Put the PALA code and data in a folder, e.g. <code>C:\MyProject\</code>. Inside should be: <code>PALA_scripts\</code>, <code>PALA_Beamforming\</code>, and the data folders <code>PALA_data_InSilicoFlow\</code>, <code>PALA_data_InSilicoPSF\</code>.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <h3>Edit the paths in the script</h3>
+        <p>Change line 1: <code>cd('F:\ArthurC\...')</code> → <code>cd('C:\MyProject')</code><br>
+        Open <code>PALA_SetUpPaths.m</code> and update <code>PALA_data_folder</code> to point to your data location.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <h3>Open MATLAB and run</h3>
+        <p>Open MATLAB → Open <code>PALA_Beamforming.m</code> → Press <strong>F5</strong> or click <strong>Run</strong>. You can also run section by section using <strong>Ctrl+Enter</strong> (run current section). Start with Setup, then Load, then Beamforming.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-body">
+        <h3>Expected outputs</h3>
+        <p><strong>Figure 1</strong>: Animated B-mode image of your beamformed data with red × marks showing bubble positions.<br>
+        <strong>Figure 2</strong>: Side-by-side comparison — your DAS result (left) vs. Verasonics professional beamformer (right).</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">5</div>
+      <div class="step-body">
+        <h3>For PSF dataset</h3>
+        <p>Run <code>PALA_Beamforming_SilicoPSF.m</code> instead. Change <code>hhh=1</code> to load the first file. The difference: RF files are in the same folder (not a subfolder), and <code>ListPos</code> is 2D instead of 3D (single scatterer positions).</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>🔧 Using the Code on Your Own Data</h2>
+    <div class="alert alert-yellow">
+      ⚠️ To use with YOUR OWN data, you need to fill PARAM manually. Here's the minimum you need:
+    </div>
+    <div class="code-body" style="background:#0d1117; border:1px solid #334155; border-radius:8px; padding:14px; font-family:monospace; font-size:0.8em; margin-top:10px">
+      <div class="code-line"><span class="code-text"><span class="comment">% Minimum PARAM for your own data:</span></span></div>
+      <div class="code-line"><span class="code-text">PARAM.f0 = <span class="number">15e6</span>;         <span class="comment">% your transducer center freq [Hz]</span></span></div>
+      <div class="code-line"><span class="code-text">PARAM.fs = <span class="number">60e6</span>;         <span class="comment">% your sampling frequency [Hz]</span></span></div>
+      <div class="code-line"><span class="code-text">PARAM.c  = <span class="number">1540</span>;          <span class="comment">% speed of sound [m/s]</span></span></div>
+      <div class="code-line"><span class="code-text">PARAM.xe = <span class="func">linspace</span>(-<span class="number">0.02</span>,<span class="number">0.02</span>,<span class="number">128</span>); <span class="comment">% element positions [m]</span></span></div>
+      <div class="code-line"><span class="code-text">PARAM.Nelements = <span class="number">128</span>;</span></div>
+      <div class="code-line"><span class="code-text">PARAM.t0 = <span class="number">0</span>;             <span class="comment">% adjust if needed</span></span></div>
+      <div class="code-line"><span class="code-text">PARAM.angles_list = <span class="number">0</span>;   <span class="comment">% single straight-ahead angle</span></span></div>
+      <div class="code-line"><span class="code-text">PARAM.fnumber = <span class="number">1.5</span>;</span></div>
+      <div class="code-line"><span class="code-text">PARAM.compound = <span class="number">0</span>;      <span class="comment">% no compounding (single angle)</span></span></div>
+      <div class="code-line"><span class="code-text">PARAM.wavelength = PARAM.c/PARAM.f0;</span></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>📊 Key Things to Understand for Your Project Report</h2>
+    <table>
+      <tr><th>Concept</th><th>Why It Matters</th></tr>
+      <tr><td>DAS delay τ = (d_tx+d_rx)/c</td><td>This IS the algorithm. Understand this formula deeply.</td></tr>
+      <tr><td>Coherent compounding</td><td>Key technique for quality improvement without losing frame rate</td></tr>
+      <tr><td>F-number aperture</td><td>Trade-off: wider aperture = better resolution BUT more artifacts at edges</td></tr>
+      <tr><td>IQ vs RF</td><td>IQ is computationally efficient; RF has full bandwidth info</td></tr>
+      <tr><td>B-mode = 20log10(|IQ|)</td><td>Connects complex signal to what you see in the image</td></tr>
+      <tr><td>DAS limitations</td><td>Computationally slow; no adaptive weighting; limited contrast vs. advanced methods (MV, CF-DAS)</td></tr>
+    </table>
+  </div>
+</div>
+
+<script>
+function show(id) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  event.target.classList.add('active');
+}
+</script>
+</body>
+</html>
